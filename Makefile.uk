@@ -1,0 +1,129 @@
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# postgres Unikraft library
+#
+# Authors: Andrei Stoian
+#
+# Copyright (c) 2021, Andrei Stoian. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+################################################################################
+# Library registration
+################################################################################
+$(eval $(call addlib_s,libpostgres,$(CONFIG_LIBPOSTGRES)))
+
+################################################################################
+# Sources
+################################################################################]
+LIBPOSTGRES_VERSION = 13.4
+LIBPOSTGRES_URL = https://ftp.postgresql.org/pub/source/v$(LIBPOSTGRES_VERSION)/postgresql-$(LIBPOSTGRES_VERSION).tar.gz
+LIBPOSTGRES_SUBDIR = postgresql-$(LIBPOSTGRES_VERSION)
+LIBPOSTGRES_PATCHDIR = $(LIBPOSTGRES_BASE)/patches
+$(eval $(call patch,libpostgres,$(LIBPOSTGRES_PATCHDIR),$(LIBPOSTGRES_SUBDIR)))
+$(eval $(call fetch,libpostgres,$(LIBPOSTGRES_URL)))
+
+################################################################################
+# Helpers
+################################################################################
+LIBPOSTGRES_EXTRACTED = $(LIBPOSTGRES_ORIGIN)/$(LIBPOSTGRES_SUBDIR)
+LIBPOSTGRES_SRC = $(LIBPOSTGRES_EXTRACTED)/src
+
+################################################################################
+# Library includes
+################################################################################
+# CINCLUDES-y += -I$(LIBPOSTGRES_BASE)/include
+
+################################################################################
+# Flags
+################################################################################
+LIBPOSTGRES_FLAGS = -DDLSUFFIX='""' -fno-strict-aliasing
+
+# Suppress some warnings to make the build process look neater
+LIBPOSTGRES_FLAGS_SUPPRESS = -Wno-unused-function -Wno-unused-parameter -Wno-sign-compare \
+	-Wno-empty-body -Wno-clobbered -Wno-cast-function-type -Wno-int-conversion \
+	-Wno-missing-field-initializers -Wno-stringop-truncation -Wno-unused-value
+
+LIBPOSTGRES_CFLAGS-y += $(LIBPOSTGRES_FLAGS)
+LIBPOSTGRES_CFLAGS-y += $(LIBPOSTGRES_FLAGS_SUPPRESS)
+
+################################################################################
+# Glue code
+################################################################################
+# Include paths
+# LIBPOSTGRES_CINCLUDES-y   += $(LIBPOSTGRES_COMMON_INCLUDES-y)
+# LIBPOSTGRES_CXXINCLUDES-y += $(LIBPOSTGRES_COMMON_INCLUDES-y)
+# LIBPOSTGRESSRCS-$(CONFIG_LIBPOSTGRES_MAIN_FUNCTION) += $(LIBPOSTGRES_BASE)/main.c|unikraft
+
+LIBPOSTGRES_CINCLUDES-y += -I$(LIBPOSTGRES_BASE)/include
+
+# LIBPOSTGRES_CINCLUDES-y += $(shell find $(LIBPOSTGRES_SRC) -type f -name '*.h' -printf '-I%h\n' | sort -u)
+# LIBPOSTGRES_CINCLUDES-y += $(shell find $(LIBPOSTGRES_SRC)/include -type d -printf '-I%p ')
+
+LIBPOSTGRES_CINCLUDES-y += -I$(LIBPOSTGRES_SRC)/backend
+
+LIBPOSTGRES_CINCLUDES-y += -I$(LIBPOSTGRES_SRC)/include
+# LIBPOSTGRES_CINCLUDES-y += -I$(LIBPOSTGRES_SRC)/include/snowball/libstemmer
+
+################################################################################
+# Library sources
+################################################################################
+LIBPOSTGRES_SRCS-y += $(shell find $(LIBPOSTGRES_SRC)/backend $(LIBPOSTGRES_SRC)/common \
+		-type f \
+		! -path '*ipc*' \
+		! -path '*libpq*' \
+		! -name 'regc_*.c' \
+		! -name 'rege_*.c' \
+		! -name 'qsort_tuple.c' \
+		! -name 'levenshtein.c' \
+		! -name 'jsonpath_scan.c' \
+		! -name 'like_*.c' \
+		! -name 'dfmgr.c' \
+		! -name 'guc-file.c' \
+		! -path '*snowball*' \
+		! -path '*llvm*' \
+		! -name 'bootscanner.c' \
+		! -name '*_scanner.c' \
+		! -path '*port*' \
+		! -path '*utils/mb*' \
+		! -name '*ssl*.c' \
+		! -path '*common/unicode*' \
+		! -name 'restricted_token.c' \
+		! -name 'fe_memutils.c' \
+		! -name 'file_utils.c' \
+		-name '*.c')
+
+################################################################################
+# Library prepare
+################################################################################
+# Run ./configure
+# $(LIBPOSTGRES_EXTRACTED)/config.status: $(LIBPOSTGRES_EXTRACTED)
+# 	$(call verbose_cmd,CONFIG,libpostgres: $(notdir $@), \
+# 		cd $(LIBPOSTGRES_EXTRACTED) && ./configure --without-readline --without-zlib)
+
+# $(LIBPOSTGRES_BUILD)/.prepared: $(LIBPOSTGRES_EXTRACTED)/config.status
+
+# UK_PREPARE += $(LIBPOSTGRES_BUILD)/.prepared

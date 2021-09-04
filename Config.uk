@@ -1,0 +1,10 @@
+menuconfig LIBPOSTGRES
+	bool "postgres Unikraft library"
+	default n
+
+if LIBPOSTGRES
+config LIBPOSTGRES_MAIN_FUNCTION
+	bool "Provide main function"
+	default n
+
+endif

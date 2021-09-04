@@ -1,0 +1,17 @@
+diff -urNp postgresql.orig/src/include/c.h postgresql-13.4/src/include/c.h
+--- postgresql.orig/src/include/c.h	2021-09-04 16:05:13.636737717 +0300
++++ postgresql-13.4/src/include/c.h	2021-09-04 16:15:11.995012313 +0300
+@@ -1313,11 +1313,11 @@ extern unsigned long long strtoull(const
+  * setjmp. Incidentally, nothing provides setjmp's functionality in
+  * that case.  We now support the case only on Windows.
+  */
+-#ifdef WIN32
++// #ifdef WIN32
+ #define sigjmp_buf jmp_buf
+ #define sigsetjmp(x,y) setjmp(x)
+ #define siglongjmp longjmp
+-#endif
++// #endif
+ 
+ /* EXEC_BACKEND defines */
+ #ifdef EXEC_BACKEND

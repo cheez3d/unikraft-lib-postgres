@@ -1,0 +1,12 @@
+diff -urNp postgresql.orig/src/include/storage/lwlock.h postgresql-13.4/src/include/storage/lwlock.h
+--- postgresql.orig/src/include/storage/lwlock.h	2021-09-04 16:05:13.616737600 +0300
++++ postgresql-13.4/src/include/storage/lwlock.h	2021-09-04 16:06:29.973183532 +0300
+@@ -100,7 +100,7 @@ extern PGDLLIMPORT NamedLWLockTranche *N
+ extern PGDLLIMPORT int NamedLWLockTrancheRequests;
+ 
+ /* Names for fixed lwlocks */
+-#include "storage/lwlocknames.h"
++#include "storage/lmgr/lwlocknames.h"
+ 
+ /*
+  * It's a bit odd to declare NUM_BUFFER_PARTITIONS and NUM_LOCK_PARTITIONS
